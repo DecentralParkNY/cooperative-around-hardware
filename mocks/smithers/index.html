@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUDDLE — pop-up co-ops around the hardware</title>
+<style>
+  :root{
+    --bg:#0d0b14;
+    --panel:#16121f;
+    --ink:#f4efe6;
+    --muted:#9a90ad;
+    --hot:#ff5c38;
+    --lime:#c7ff45;
+    --violet:#8b6bff;
+    --line:#2a2338;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%,rgba(139,107,255,.22),transparent 60%),
+      radial-gradient(900px 500px at -10% 110%,rgba(199,255,69,.12),transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;padding:24px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .phone{
+    width:390px;max-width:100%;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:38px;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.04);
+    overflow:hidden;
+    position:relative;
+  }
+  .notch{height:26px;display:flex;align-items:center;justify-content:center}
+  .notch::before{content:"";width:120px;height:6px;border-radius:6px;background:#000}
+  .pad{padding:0 22px 26px}
+
+  .brandrow{display:flex;align-items:center;gap:10px;margin-top:2px}
+  .mark{
+    width:34px;height:34px;border-radius:11px;
+    background:linear-gradient(135deg,var(--hot),var(--violet));
+    display:grid;place-items:center;font-size:19px;
+    box-shadow:0 0 0 3px rgba(255,92,56,.15);
+  }
+  .brand{font-weight:800;letter-spacing:2px;font-size:19px}
+  .live{
+    margin-left:auto;font-size:11px;font-weight:700;letter-spacing:1px;
+    color:var(--lime);display:flex;align-items:center;gap:6px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--lime);
+    box-shadow:0 0 0 0 var(--lime);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(199,255,69,.6)}70%{box-shadow:0 0 0 9px rgba(199,255,69,0)}100%{box-shadow:0 0 0 0 rgba(199,255,69,0)}}
+
+  .pitch{
+    margin:20px 0 6px;font-size:26px;line-height:1.18;font-weight:800;letter-spacing:-.3px;
+  }
+  .pitch em{font-style:normal;color:var(--hot)}
+  .pitch b{color:var(--lime);font-weight:800}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+
+  .card{
+    background:linear-gradient(180deg,#1d1728,#15111d);
+    border:1px solid var(--line);border-radius:22px;
+    padding:16px 16px 18px;position:relative;overflow:hidden;
+  }
+  .card::after{content:"";position:absolute;inset:-40% -20% auto auto;width:180px;height:180px;
+    background:radial-gradient(circle,rgba(139,107,255,.35),transparent 65%);pointer-events:none}
+  .hwtag{font-size:11px;letter-spacing:1.5px;color:var(--muted);font-weight:700}
+  .hwname{font-size:20px;font-weight:800;margin-top:3px}
+  .hwmeta{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .members{display:flex;align-items:center;margin:16px 0 4px}
+  .av{width:32px;height:32px;border-radius:50%;border:2px solid var(--panel);
+    margin-left:-9px;display:grid;place-items:center;font-size:13px;font-weight:800;color:#0d0b14}
+  .av:first-child{margin-left:0}
+  .a1{background:var(--hot)}.a2{background:var(--lime)}.a3{background:var(--violet)}.a4{background:#ffd23f}
+  .avmore{background:#2a2338;color:var(--ink);font-size:12px}
+  .memtxt{margin-left:12px;font-size:12px;color:var(--muted)}
+  .memtxt b{color:var(--ink)}
+
+  .prog{height:9px;border-radius:9px;background:#241d33;margin-top:14px;overflow:hidden}
+  .fill{height:100%;width:64%;border-radius:9px;
+    background:linear-gradient(90deg,var(--hot),var(--lime));transition:width .5s ease}
+  .goal{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:7px}
+  .goal b{color:var(--ink)}
+
+  .btn{
+    margin-top:18px;width:100%;border:none;cursor:pointer;
+    padding:16px;border-radius:16px;font-size:16px;font-weight:800;letter-spacing:.3px;
+    color:#0d0b14;background:linear-gradient(135deg,var(--lime),#9ff02a);
+    box-shadow:0 12px 30px -10px rgba(199,255,69,.5);
+    transition:transform .12s ease,filter .2s ease;font-family:inherit;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.joined{background:linear-gradient(135deg,var(--violet),var(--hot));color:var(--ink)}
+  .foot{text-align:center;font-size:11px;color:var(--muted);margin-top:14px}
+  .foot span{color:var(--hot)}
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="pad">
+      <div class="brandrow">
+        <div class="mark">⚡</div>
+        <div class="brand">HUDDLE</div>
+        <div class="live"><span class="dot"></span>3 POP-UPS NEARBY</div>
+      </div>
+
+      <h1 class="pitch">Spin up a <em>tiny co-op</em> around the <b>hardware</b> right in front of you.</h1>
+      <p class="sub">See a machine. Rally the room. Split the cost. Share the keys.</p>
+
+      <div class="card">
+        <div class="hwtag">POP-UP CO-OP · 40M AWAY</div>
+        <div class="hwname">The Riso in Studio 4</div>
+        <div class="hwmeta">Risograph printer · unlocked for the weekend</div>
+
+        <div class="members">
+          <div class="av a1">M</div>
+          <div class="av a2">J</div>
+          <div class="av a3">K</div>
+          <div class="av a4">R</div>
+          <div class="av avmore">+5</div>
+          <div class="memtxt"><b>9 neighbors</b> chipped in</div>
+        </div>
+
+        <div class="prog"><div class="fill" id="fill"></div></div>
+        <div class="goal"><span>Buy-in <b id="raised">$320</b></span><span>Unlock at $500</span></div>
+
+        <button class="btn" id="joinBtn">Chip in $20 &amp; join the huddle</button>
+      </div>
+
+      <div class="foot">co-owned for <span>72 hours</span>, then it dissolves</div>
+    </div>
+  </div>
+
+<script>
+  var joined=false;
+  var raised=320;
+  var btn=document.getElementById('joinBtn');
+  var fill=document.getElementById('fill');
+  var raisedEl=document.getElementById('raised');
+  btn.addEventListener('click',function(){
+    if(joined){return;}
+    joined=true;
+    raised+=20;
+    var pct=Math.min(100,Math.round(raised/500*100));
+    fill.style.width=pct+'%';
+    raisedEl.textContent='$'+raised;
+    btn.classList.add('joined');
+    btn.textContent="You're in — 10 neighbors strong ✦";
+  });
+</script>
+</body>
+</html>
